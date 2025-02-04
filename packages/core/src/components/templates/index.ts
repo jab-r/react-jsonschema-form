@@ -10,14 +10,20 @@ import type {
   DescriptionFieldProps,
   FieldErrorProps,
   FieldHelpProps,
-  IconButtonProps,
-  SubmitButtonProps,
   ObjectFieldTemplatePropertyType,
+  ArrayFieldTemplateProps,
+  ArrayFieldTemplateItemType,
+  ArrayFieldDescriptionProps,
+  ArrayFieldTitleProps,
+  BaseInputTemplateProps,
+  FieldTemplateProps,
+  SubmitButtonProps,
 } from '@rjsf/utils';
 
 import { TextWidget } from '../widgets/native';
 import { nativeBridge } from './NativeTemplateImplementation';
 import type { NativeTemplateStyles, NativeTemplateBaseProps } from './NativeTemplateBridge';
+import { NativeSubmitButton } from './NativeSubmitButton';
 
 import ArrayFieldDescriptionTemplate from './ArrayFieldDescriptionTemplate';
 import ArrayFieldItemTemplate from './ArrayFieldItemTemplate';
@@ -61,22 +67,26 @@ function ObjectFieldTemplate<T = any, S extends StrictRJSFSchema = RJSFSchema, F
   props: ObjectFieldTemplateProps<T, S, F> & NativeTemplateBaseProps
 ): React.ReactElement {
   const { properties, title, description, styles = defaultStyles, testID } = props;
-  
-  const titleElement = title ? nativeBridge.createText({
-    key: 'title',
-    testID: `${testID}-title`,
-    style: styles.title,
-    children: title,
-  }) : null;
 
-  const descriptionElement = description ? nativeBridge.createText({
-    key: 'description',
-    testID: `${testID}-description`,
-    style: styles.description,
-    children: description,
-  }) : null;
+  const titleElement = title
+    ? nativeBridge.createText({
+        key: 'title',
+        testID: `${testID}-title`,
+        style: styles.title,
+        children: title,
+      })
+    : null;
 
-  const propertyElements = properties.map((prop: ObjectFieldTemplatePropertyType) => 
+  const descriptionElement = description
+    ? nativeBridge.createText({
+        key: 'description',
+        testID: `${testID}-description`,
+        style: styles.description,
+        children: description,
+      })
+    : null;
+
+  const propertyElements = properties.map((prop: ObjectFieldTemplatePropertyType) =>
     nativeBridge.createView({
       key: prop.name,
       testID: `${testID}-property-${prop.name}`,
@@ -138,8 +148,7 @@ function FieldErrorTemplate<T = any, S extends StrictRJSFSchema = RJSFSchema, F 
   if (!errors?.length) {
     return null;
   }
-  
-  const errorElements = errors.map((error: string | React.ReactElement, index: number) =>
+  const errorElements = errors.map((error: string | React.ReactElement, index: number) => 
     nativeBridge.createText({
       key: `error-${index}`,
       testID: `${testID}-error-${index}`,
@@ -155,28 +164,30 @@ function FieldErrorTemplate<T = any, S extends StrictRJSFSchema = RJSFSchema, F 
   });
 }
 
-function templates<
-  T = any,
-  S extends StrictRJSFSchema = RJSFSchema,
-  F extends FormContextType = any
->(): TemplatesType<T, S, F> {
+function templates<T = any, S extends StrictRJSFSchema = RJSFSchema, F extends FormContextType = any>(): TemplatesType<
+  T,
+  S,
+  F
+> {
   return {
-    ArrayFieldDescriptionTemplate: ArrayFieldDescriptionTemplate as React.ComponentType<any>,
-    ArrayFieldItemTemplate: ArrayFieldItemTemplate as React.ComponentType<any>,
-    ArrayFieldTemplate: ArrayFieldTemplate as React.ComponentType<any>,
-    ArrayFieldTitleTemplate: ArrayFieldTitleTemplate as React.ComponentType<any>,
-    BaseInputTemplate: TextWidget as React.ComponentType<any>,
+    ArrayFieldDescriptionTemplate: ArrayFieldDescriptionTemplate as React.ComponentType<
+      ArrayFieldDescriptionProps<T, S, F>
+    >,
+    ArrayFieldItemTemplate: ArrayFieldItemTemplate as React.ComponentType<ArrayFieldTemplateItemType<T, S, F>>,
+    ArrayFieldTemplate: ArrayFieldTemplate as React.ComponentType<ArrayFieldTemplateProps<T, S, F>>,
+    ArrayFieldTitleTemplate: ArrayFieldTitleTemplate as React.ComponentType<ArrayFieldTitleProps<T, S, F>>,
+    BaseInputTemplate: TextWidget as unknown as React.ComponentType<BaseInputTemplateProps<T, S, F>>,
     ButtonTemplates: {
-      AddButton: ButtonTemplates.AddButton as React.ComponentType<IconButtonProps<T, S, F>>,
-      CopyButton: ButtonTemplates.CopyButton as React.ComponentType<IconButtonProps<T, S, F>>,
-      MoveDownButton: ButtonTemplates.MoveDownButton as React.ComponentType<IconButtonProps<T, S, F>>,
-      MoveUpButton: ButtonTemplates.MoveUpButton as React.ComponentType<IconButtonProps<T, S, F>>,
-      RemoveButton: ButtonTemplates.RemoveButton as React.ComponentType<IconButtonProps<T, S, F>>,
-      SubmitButton: ButtonTemplates.SubmitButton as React.ComponentType<SubmitButtonProps<T, S, F>>,
+      AddButton: ButtonTemplates.AddButton,
+      CopyButton: ButtonTemplates.CopyButton,
+      MoveDownButton: ButtonTemplates.MoveDownButton,
+      MoveUpButton: ButtonTemplates.MoveUpButton,
+      RemoveButton: ButtonTemplates.RemoveButton,
+      SubmitButton: NativeSubmitButton as unknown as React.ComponentType<SubmitButtonProps<T, S, F>>,
     },
     DescriptionFieldTemplate: DescriptionFieldTemplate as React.ComponentType<DescriptionFieldProps<T, S, F>>,
-    ErrorListTemplate: NativeErrorList as React.ComponentType<any>,
-    FieldTemplate: NativeFieldTemplate as React.ComponentType<any>,
+    ErrorListTemplate: NativeErrorList,
+    FieldTemplate: NativeFieldTemplate as unknown as React.ComponentType<FieldTemplateProps<T, S, F>>,
     FieldErrorTemplate: FieldErrorTemplate as React.ComponentType<FieldErrorProps<T, S, F>>,
     FieldHelpTemplate: FieldHelpTemplate as React.ComponentType<FieldHelpProps<T, S, F>>,
     ObjectFieldTemplate: ObjectFieldTemplate as React.ComponentType<ObjectFieldTemplateProps<T, S, F>>,

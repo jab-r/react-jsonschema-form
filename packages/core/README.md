@@ -6,25 +6,12 @@
 
 <br />
 <p align="center">
-  <a href="https://github.com/rjsf-team/react-jsonschema-form">
-    <img src="https://raw.githubusercontent.com/rjsf-team/react-jsonschema-form/59a8206e148474bea854bbb004f624143fbcbac8/packages/core/logo.png" alt="Logo" width="180" height="120">
+  <a href="https://github.com/jab-rreact-jsonschema-form">
+    <img src="https://raw.githubusercontent.com/jab-r/react-jsonschema-form/59a8206e148474bea854bbb004f624143fbcbac8/packages/core/logo.png" alt="Logo" width="180" height="120">
   </a>
 
   <h3 align="center">@rjsf/core</h3>
 
-  <p align="center">
-  Core logic and classic Bootstrap 3 theme for <a href="https://github.com/rjsf-team/react-jsonschema-form/"><code>react-jsonschema-form</code></a>.
-    <br />
-    <a href="https://rjsf-team.github.io/react-jsonschema-form/docs/"><strong>Explore the docs »</strong></a>
-    <br />
-    <br />
-    <a href="https://rjsf-team.github.io/react-jsonschema-form/">View Playground</a>
-    ·
-    <a href="https://github.com/rjsf-team/react-jsonschema-form/issues">Report Bug</a>
-    ·
-    <a href="https://github.com/rjsf-team/react-jsonschema-form/issues">Request Feature</a>
-  </p>
-</p>
 
 <!-- TABLE OF CONTENTS -->
 
@@ -45,12 +32,7 @@
 
 ## About The Project
 
-Core logic and classic Bootstrap 3 theme for `react-jsonschema-form`.
-
-### Built With
-
-- [react-jsonschema-form](https://github.com/rjsf-team/react-jsonschema-form/)
-- [Bootstrap 3](https://getbootstrap.com/docs/3.3/)
+This is a react-native for mobile port of [react-jsonschema-form](https://github.com/jab-r/react-jsonschema-form)
 
 <!-- GETTING STARTED -->
 
@@ -58,24 +40,16 @@ Core logic and classic Bootstrap 3 theme for `react-jsonschema-form`.
 
 ### Prerequisites
 
-- `Bootstrap 3`
-
-To use the default Bootstrap 3 theme, add a Bootstrap 3 CSS tag to your HTML page:
-
-```html
-<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" />
-```
-
 ### Installation
 
 ```sh
-npm install @rjsf/core
+npm install @jab-r/react-native-jsonschema-form
 ```
 
 ## Usage
 
 ```javascript
-import Form from '@rjsf/core';
+import FormNative from '@jab-r/react-native-jsonschema-form/core';
 ```
 
 <!-- ROADMAP -->
@@ -88,27 +62,11 @@ See the general [open issues](https://github.com/rjsf-team/react-jsonschema-form
 
 ## Contributing
 
-Read our [contributors' guide](https://rjsf-team.github.io/react-jsonschema-form/docs/contributing/) to get started.
 
 <!-- CONTACT -->
 
 ## Contact
 
-rjsf team: [https://github.com/orgs/rjsf-team/people](https://github.com/orgs/rjsf-team/people)
-
-GitHub repository: [https://github.com/rjsf-team/react-jsonschema-form](https://github.com/rjsf-team/react-jsonschema-form)
 
 <!-- MARKDOWN LINKS & IMAGES -->
 <!-- https://www.markdownguide.org/basic-syntax/#reference-style-links -->
-
-[build-shield]: https://github.com/rjsf-team/react-jsonschema-form/workflows/CI/badge.svg
-[build-url]: https://github.com/rjsf-team/react-jsonschema-form/actions
-[contributors-shield]: https://img.shields.io/github/contributors/rjsf-team/react-jsonschema-form.svg
-[contributors-url]: https://github.com/rjsf-team/react-jsonschema-form/graphs/contributors
-[license-shield]: https://img.shields.io/badge/license-Apache%202.0-blue.svg?style=flat-square
-[license-url]: https://choosealicense.com/licenses/apache-2.0/
-[npm-shield]: https://img.shields.io/npm/v/@rjsf/core/latest.svg?style=flat-square
-[npm-url]: https://www.npmjs.com/package/@rjsf/core
-[npm-dl-shield]: https://img.shields.io/npm/dm/@rjsf/core.svg?style=flat-square
-[npm-dl-url]: https://www.npmjs.com/package/@rjsf/core
-[product-screenshot]: https://raw.githubusercontent.com/rjsf-team/react-jsonschema-form/59a8206e148474bea854bbb004f624143fbcbac8/packages/core/screenshot.png
