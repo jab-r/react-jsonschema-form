@@ -3,7 +3,9 @@
     "composite": true,
     "target": "ES2018",
     "module": "esnext",
-    "lib": ["dom", "esnext"],
+    "lib": ["esnext"],
+    "skipLibCheck": true,
+    "types": ["react-native", "jest"],
     "importHelpers": false,
     "declaration": true,
     "sourceMap": true,
@@ -21,8 +23,12 @@
     "allowSyntheticDefaultImports": true,
     "moduleResolution": "node",
     "isolatedModules": true,
-    "jsx": "react-jsx",
+    "jsx": "react",
     "esModuleInterop": true,
-    "allowJs": true
+    "allowJs": true,
+    "baseUrl": ".",
+    "paths": {
+      "*": ["node_modules/*"]
+    }
   }
 }
