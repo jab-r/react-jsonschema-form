@@ -1,29 +1,46 @@
+import { StyleSheet } from 'react-native';
 import { helpId, FieldHelpProps, FormContextType, RJSFSchema, StrictRJSFSchema } from '@rjsf/utils';
+import { nativeBridge } from './NativeTemplateImplementation';
+import type { NativeTemplateBaseProps } from './NativeTemplateBridge';
 
-/** The `FieldHelpTemplate` component renders any help desired for a field
- *
- * @param props - The `FieldHelpProps` to be rendered
- */
+const styles = StyleSheet.create({
+  container: {
+    marginTop: 4,
+    marginBottom: 8,
+  },
+  helpText: {
+    fontSize: 12,
+    color: '#666666',
+  },
+});
+
 export default function FieldHelpTemplate<
   T = any,
   S extends StrictRJSFSchema = RJSFSchema,
   F extends FormContextType = any
->(props: FieldHelpProps<T, S, F>) {
-  const { idSchema, help } = props;
+>(props: FieldHelpProps<T, S, F> & NativeTemplateBaseProps) {
+  const { idSchema, help, testID } = props;
+
   if (!help) {
     return null;
   }
+
   const id = helpId<T>(idSchema);
-  if (typeof help === 'string') {
-    return (
-      <p id={id} className='help-block'>
-        {help}
-      </p>
-    );
-  }
-  return (
-    <div id={id} className='help-block'>
-      {help}
-    </div>
-  );
+
+  return nativeBridge.createView({
+    testID,
+    id,
+    style: styles.container,
+    accessible: true,
+    accessibilityRole: 'text',
+    accessibilityLabel: typeof help === 'string' ? help : undefined,
+    children:
+      typeof help === 'string'
+        ? nativeBridge.createText({
+            testID: `${testID}-text`,
+            style: styles.helpText,
+            children: help,
+          })
+        : help,
+  });
 }

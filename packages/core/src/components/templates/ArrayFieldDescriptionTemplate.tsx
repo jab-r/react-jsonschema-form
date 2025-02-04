@@ -1,5 +1,7 @@
-import { View, Text, StyleSheet } from 'react-native';
+import { StyleSheet } from 'react-native';
 import type { ArrayFieldDescriptionProps, FormContextType, RJSFSchema, StrictRJSFSchema } from '@rjsf/utils';
+import { nativeBridge } from './NativeTemplateImplementation';
+import type { NativeTemplateBaseProps } from './NativeTemplateBridge';
 
 const styles = StyleSheet.create({
   container: {
@@ -15,16 +17,22 @@ export default function NativeArrayFieldDescriptionTemplate<
   T = any,
   S extends StrictRJSFSchema = RJSFSchema,
   F extends FormContextType = any
->(props: ArrayFieldDescriptionProps<T, S, F>) {
-  const { description } = props;
+>(props: ArrayFieldDescriptionProps<T, S, F> & NativeTemplateBaseProps) {
+  const { description, testID } = props;
 
   if (!description) {
     return null;
   }
 
-  return (
-    <View style={styles.container} accessible={true} accessibilityRole="text">
-      <Text style={styles.description}>{description}</Text>
-    </View>
-  );
+  return nativeBridge.createView({
+    testID,
+    style: styles.container,
+    accessible: true,
+    accessibilityRole: 'text',
+    children: nativeBridge.createText({
+      testID: `${testID}-text`,
+      style: styles.description,
+      children: description,
+    }),
+  });
 }

@@ -1,3 +1,4 @@
+import { StyleSheet, TextInput } from 'react-native';
 import {
   ADDITIONAL_PROPERTY_FLAG,
   FormContextType,
@@ -6,75 +7,117 @@ import {
   TranslatableString,
   WrapIfAdditionalTemplateProps,
 } from '@rjsf/utils';
+import { nativeBridge } from './NativeTemplateImplementation';
+import type { NativeTemplateBaseProps } from './NativeTemplateBridge';
 
-import Label from './FieldTemplate/Label';
+const styles = StyleSheet.create({
+  container: {
+    marginBottom: 8,
+  },
+  row: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+  },
+  keyColumn: {
+    flex: 5,
+    marginRight: 8,
+  },
+  contentColumn: {
+    flex: 5,
+    marginRight: 8,
+  },
+  buttonColumn: {
+    flex: 2,
+  },
+  label: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: '#000000',
+    marginBottom: 4,
+  },
+  input: {
+    height: 40,
+    borderWidth: 1,
+    borderColor: '#ced4da',
+    borderRadius: 4,
+    paddingHorizontal: 12,
+    fontSize: 16,
+    backgroundColor: '#ffffff',
+  },
+  inputDisabled: {
+    backgroundColor: '#e9ecef',
+  },
+});
 
-/** The `WrapIfAdditional` component is used by the `FieldTemplate` to rename, or remove properties that are
- * part of an `additionalProperties` part of a schema.
- *
- * @param props - The `WrapIfAdditionalProps` for this component
- */
 export default function WrapIfAdditionalTemplate<
   T = any,
   S extends StrictRJSFSchema = RJSFSchema,
   F extends FormContextType = any
->(props: WrapIfAdditionalTemplateProps<T, S, F>) {
-  const {
-    id,
-    classNames,
-    style,
-    disabled,
-    label,
-    onKeyChange,
-    onDropPropertyClick,
-    readonly,
-    required,
-    schema,
-    children,
-    uiSchema,
-    registry,
-  } = props;
+>(props: WrapIfAdditionalTemplateProps<T, S, F> & NativeTemplateBaseProps) {
+  const { disabled, label, onKeyChange, onDropPropertyClick, readonly, schema, children, uiSchema, registry, testID } = props;
+
   const { templates, translateString } = registry;
-  // Button templates are not overridden in the uiSchema
   const { RemoveButton } = templates.ButtonTemplates;
   const keyLabel = translateString(TranslatableString.KeyLabel, [label]);
   const additional = ADDITIONAL_PROPERTY_FLAG in schema;
 
   if (!additional) {
-    return (
-      <div className={classNames} style={style}>
-        {children}
-      </div>
-    );
+    return nativeBridge.createView({
+      testID,
+      style: styles.container,
+      children,
+    });
   }
 
-  return (
-    <div className={classNames} style={style}>
-      <div className='row'>
-        <div className='col-xs-5 form-additional'>
-          <div className='form-group'>
-            <Label label={keyLabel} required={required} id={`${id}-key`} />
-            <input
-              className='form-control'
-              type='text'
-              id={`${id}-key`}
-              onBlur={({ target }) => onKeyChange(target && target.value)}
-              defaultValue={label}
+  return nativeBridge.createView({
+    testID,
+    style: styles.container,
+    children: nativeBridge.createView({
+      testID: `${testID}-row`,
+      style: styles.row,
+      children: [
+        nativeBridge.createView({
+          testID: `${testID}-key-column`,
+          style: styles.keyColumn,
+          children: [
+            nativeBridge.createText({
+              testID: `${testID}-key-label`,
+              style: styles.label,
+              children: keyLabel,
+            }),
+            nativeBridge.createView({
+              testID: `${testID}-key-input-container`,
+              style: [styles.input, (disabled || readonly) && styles.inputDisabled],
+              children: (
+                <TextInput
+                  testID={`${testID}-key-input`}
+                  defaultValue={label}
+                  onBlur={(event) => onKeyChange(event.nativeEvent.text)}
+                  editable={!disabled && !readonly}
+                  accessibilityLabel={keyLabel}
+                />
+              ),
+            }),
+          ],
+        }),
+        nativeBridge.createView({
+          testID: `${testID}-content-column`,
+          style: styles.contentColumn,
+          children,
+        }),
+        nativeBridge.createView({
+          testID: `${testID}-button-column`,
+          style: styles.buttonColumn,
+          children: (
+            <RemoveButton
+              disabled={disabled || readonly}
+              onClick={onDropPropertyClick(label)}
+              uiSchema={uiSchema}
+              registry={registry}
             />
-          </div>
-        </div>
-        <div className='form-additional form-group col-xs-5'>{children}</div>
-        <div className='col-xs-2'>
-          <RemoveButton
-            className='array-item-remove btn-block'
-            style={{ border: '0' }}
-            disabled={disabled || readonly}
-            onClick={onDropPropertyClick(label)}
-            uiSchema={uiSchema}
-            registry={registry}
-          />
-        </div>
-      </div>
-    </div>
-  );
+          ),
+        }),
+      ],
+    }),
+  });
 }

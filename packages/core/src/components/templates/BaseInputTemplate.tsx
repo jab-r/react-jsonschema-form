@@ -1,28 +1,34 @@
-import { ChangeEvent, FocusEvent, useCallback } from 'react';
-import {
-  ariaDescribedByIds,
-  BaseInputTemplateProps,
-  examplesId,
-  getInputProps,
-  FormContextType,
-  RJSFSchema,
-  StrictRJSFSchema,
-} from '@rjsf/utils';
+import { useCallback } from 'react';
+import { StyleSheet, TextInput } from 'react-native';
+import type { BaseInputTemplateProps, FormContextType, RJSFSchema, StrictRJSFSchema } from '@rjsf/utils';
+import { nativeBridge } from './NativeTemplateImplementation';
+import type { NativeTemplateBaseProps } from './NativeTemplateBridge';
 
-/** The `BaseInputTemplate` is the template to use to render the basic `<input>` component for the `core` theme.
- * It is used as the template for rendering many of the <input> based widgets that differ by `type` and callbacks only.
- * It can be customized/overridden for other themes or individual implementations as needed.
- *
- * @param props - The `WidgetProps` for this template
- */
+const styles = StyleSheet.create({
+  input: {
+    height: 40,
+    borderWidth: 1,
+    borderColor: '#ced4da',
+    borderRadius: 4,
+    paddingHorizontal: 12,
+    fontSize: 16,
+    backgroundColor: '#ffffff',
+  },
+  disabled: {
+    backgroundColor: '#e9ecef',
+  },
+  error: {
+    borderColor: '#dc3545',
+  },
+});
+
 export default function BaseInputTemplate<
   T = any,
   S extends StrictRJSFSchema = RJSFSchema,
   F extends FormContextType = any
->(props: BaseInputTemplateProps<T, S, F>) {
+>(props: BaseInputTemplateProps<T, S, F> & NativeTemplateBaseProps) {
   const {
     id,
-    name, // remove this from ...rest
     value,
     readonly,
     disabled,
@@ -30,76 +36,83 @@ export default function BaseInputTemplate<
     onBlur,
     onFocus,
     onChange,
-    onChangeOverride,
     options,
     schema,
-    uiSchema,
-    formContext,
-    registry,
-    rawErrors,
     type,
-    hideLabel, // remove this from ...rest
-    hideError, // remove this from ...rest
-    ...rest
+    rawErrors,
+    testID,
   } = props;
 
-  // Note: since React 15.2.0 we can't forward unknown element attributes, so we
-  // exclude the "options" and "schema" ones here.
-  if (!id) {
-    console.log('No id for', props);
-    throw new Error(`no id for props ${JSON.stringify(props)}`);
-  }
-  const inputProps = {
-    ...rest,
-    ...getInputProps<T, S, F>(schema, type, options),
+  const inputValue = value || value === 0 ? String(value) : '';
+
+  const getKeyboardType = () => {
+    switch (type) {
+      case 'number':
+      case 'integer':
+        return 'numeric';
+      case 'email':
+        return 'email-address';
+      case 'tel':
+        return 'phone-pad';
+      case 'url':
+        return 'url';
+      default:
+        return 'default';
+    }
   };
 
-  let inputValue;
-  if (inputProps.type === 'number' || inputProps.type === 'integer') {
-    inputValue = value || value === 0 ? value : '';
-  } else {
-    inputValue = value == null ? '' : value;
-  }
+  const getTextContentType = () => {
+    switch (type) {
+      case 'email':
+        return 'emailAddress';
+      case 'tel':
+        return 'telephoneNumber';
+      case 'url':
+        return 'URL';
+      case 'password':
+        return 'password';
+      default:
+        return 'none';
+    }
+  };
 
   const _onChange = useCallback(
-    ({ target: { value } }: ChangeEvent<HTMLInputElement>) => onChange(value === '' ? options.emptyValue : value),
+    (text: string) => onChange(text === '' ? options.emptyValue : text),
     [onChange, options]
   );
-  const _onBlur = useCallback(
-    ({ target }: FocusEvent<HTMLInputElement>) => onBlur(id, target && target.value),
-    [onBlur, id]
-  );
-  const _onFocus = useCallback(
-    ({ target }: FocusEvent<HTMLInputElement>) => onFocus(id, target && target.value),
-    [onFocus, id]
+
+  const _onBlur = useCallback(() => onBlur && onBlur(id, inputValue), [onBlur, id, inputValue]);
+
+  const _onFocus = useCallback(() => onFocus && onFocus(id, inputValue), [onFocus, id, inputValue]);
+
+  const inputStyle = [styles.input, disabled ? styles.disabled : null, rawErrors?.length ? styles.error : null].filter(
+    Boolean
   );
 
-  return (
-    <>
-      <input
-        id={id}
-        name={id}
-        className='form-control'
-        readOnly={readonly}
-        disabled={disabled}
-        autoFocus={autofocus}
+  const placeholder =
+    Array.isArray(schema.examples) && schema.examples.length > 0 ? String(schema.examples[0]) : undefined;
+
+  return nativeBridge.createView({
+    testID,
+    accessible: true,
+    accessibilityRole: 'textbox',
+    accessibilityLabel: schema.title || schema.description || id,
+    children: (
+      <TextInput
+        testID={`${testID}-input`}
+        style={inputStyle}
         value={inputValue}
-        {...inputProps}
-        list={schema.examples ? examplesId<T>(id) : undefined}
-        onChange={onChangeOverride || _onChange}
+        onChangeText={_onChange}
         onBlur={_onBlur}
         onFocus={_onFocus}
-        aria-describedby={ariaDescribedByIds<T>(id, !!schema.examples)}
+        editable={!readonly && !disabled}
+        autoFocus={autofocus}
+        keyboardType={getKeyboardType()}
+        textContentType={getTextContentType()}
+        secureTextEntry={type === 'password'}
+        placeholder={placeholder}
+        placeholderTextColor='#6c757d'
       />
-      {Array.isArray(schema.examples) && (
-        <datalist key={`datalist_${id}`} id={examplesId<T>(id)}>
-          {(schema.examples as string[])
-            .concat(schema.default && !schema.examples.includes(schema.default) ? ([schema.default] as string[]) : [])
-            .map((example: any) => {
-              return <option key={example} value={example} />;
-            })}
-        </datalist>
-      )}
-    </>
-  );
+    ),
+  });
 }

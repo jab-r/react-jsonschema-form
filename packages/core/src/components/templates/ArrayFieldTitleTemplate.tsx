@@ -1,5 +1,7 @@
-import { View, Text, StyleSheet } from 'react-native';
+import { StyleSheet } from 'react-native';
 import type { ArrayFieldTitleProps, FormContextType, RJSFSchema, StrictRJSFSchema } from '@rjsf/utils';
+import { nativeBridge } from './NativeTemplateImplementation';
+import type { NativeTemplateBaseProps } from './NativeTemplateBridge';
 
 const styles = StyleSheet.create({
   container: {
@@ -23,23 +25,34 @@ export default function NativeArrayFieldTitleTemplate<
   T = any,
   S extends StrictRJSFSchema = RJSFSchema,
   F extends FormContextType = any
->(props: ArrayFieldTitleProps<T, S, F>) {
-  const { title, required } = props;
+>(props: ArrayFieldTitleProps<T, S, F> & NativeTemplateBaseProps) {
+  const { title, required, testID } = props;
 
   if (!title) {
     return null;
   }
 
-  return (
-    <View 
-      style={styles.container}
-      accessible={true}
-      accessibilityRole="header"
-    >
-      <View style={styles.titleContainer}>
-        <Text style={styles.title}>{title}</Text>
-        {required && <Text style={styles.required}>*</Text>}
-      </View>
-    </View>
-  );
+  return nativeBridge.createView({
+    testID,
+    style: styles.container,
+    accessible: true,
+    accessibilityRole: 'header',
+    children: nativeBridge.createView({
+      testID: `${testID}-title-container`,
+      style: styles.titleContainer,
+      children: [
+        nativeBridge.createText({
+          testID: `${testID}-title-text`,
+          style: styles.title,
+          children: title,
+        }),
+        required &&
+          nativeBridge.createText({
+            testID: `${testID}-required-indicator`,
+            style: styles.required,
+            children: '*',
+          }),
+      ].filter(Boolean),
+    }),
+  });
 }

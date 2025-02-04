@@ -35,22 +35,22 @@
      * Safe area handling
      * Platform-specific props
 
-3. Usage Layer (index.ts)
-   - Template Implementation:
-     * Bridge pattern usage
-     * Component composition
-     * Error handling
-     * Accessibility support
-   - Type Integration:
-     * Generic type support
-     * Proper type inference
-     * Type guard usage
-     * Error type handling
-   - Testing Support:
+3. Template Implementation Patterns
+   - Core Templates:
+     * Consistent bridge usage
+     * Proper style inheritance
      * TestID propagation
-     * Component testing
-     * Integration testing
-     * Accessibility testing
+     * Accessibility support
+   - Field Templates:
+     * Label handling
+     * Required field indicators
+     * Error state management
+     * Help text display
+   - Error Templates:
+     * Error message formatting
+     * Error state styling
+     * Error boundary integration
+     * Validation feedback
 
 ## Form Components
 1. Class-based Form Component (FormNative.tsx)
@@ -117,77 +117,6 @@
      * TestID props
      * Component testing
      * Accessibility testing
-
-3. Template Patterns
-   - Single Implementation
-     * One template per component
-     * Native-only implementation
-     * Platform-specific optimizations
-   - Component Organization
-     * Centralized button templates
-     * Proper component exports
-     * Clear file structure
-     * Standardized type patterns
-   - Type Safety
-     * React Native component types
-     * Style type definitions
-     * Generic constraints
-     * Event handler typing
-     * Explicit return types
-   - Error Handling
-     * Type-safe error props
-     * Error display components
-     * Error state management
-     * Proper null handling
-   - Accessibility
-     * ARIA roles and states
-     * Accessible labels
-     * Touch targets
-     * Screen reader support
-   - Testing Support
-     * Unit test setup
-     * Integration testing
-     * Accessibility testing
-
-## Data Flow
-1. Form Data
-   - Top-down props flow
-   - State updates through callbacks
-   - Validation on change/submit
-   - Safe error handling with boundaries
-
-2. Error Handling
-   - Try/catch blocks for validation
-   - Validation errors tracked in state
-   - Display controlled by showErrorList prop
-   - Custom error transformations supported
-   - Safe scrolling to errors with boundaries
-
-## TypeScript Patterns
-- Generic types for form data (T)
-- Schema type constraints (S)
-- Form context type (F)
-- Type guards for runtime checks
-- Enhanced type safety for templates
-- FormStatus type for state tracking
-- Proper type inference throughout
-- Complete ButtonTemplates typing
-- Widget type improvements
-  * Strict value typing
-  * Event handler type safety
-  * Platform-specific type variations
-  * Accessibility prop types
-  * Style type definitions
-- Template type improvements
-  * React Native component types
-  * Proper generic handling
-  * Type-safe props
-  * Standardized patterns
-- Documentation patterns
-  * JSDoc comments
-  * Type descriptions
-  * Usage examples
-  * Constraint explanations
 
 ## React Native Patterns
 - Platform-specific components

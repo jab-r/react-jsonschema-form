@@ -1,3 +1,4 @@
+import { StyleSheet } from 'react-native';
 import {
   FieldTemplateProps,
   FormContextType,
@@ -6,36 +7,80 @@ import {
   getTemplate,
   getUiOptions,
 } from '@rjsf/utils';
+import { nativeBridge } from '../NativeTemplateImplementation';
+import type { NativeTemplateBaseProps } from '../NativeTemplateBridge';
 
-import Label from './Label';
+const styles = StyleSheet.create({
+  hidden: {
+    display: 'none',
+  },
+  container: {
+    marginBottom: 8,
+  },
+  label: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: '#000000',
+    marginBottom: 4,
+  },
+  description: {
+    fontSize: 14,
+    color: '#666666',
+    marginBottom: 8,
+  },
+});
 
-/** The `FieldTemplate` component is the template used by `SchemaField` to render any field. It renders the field
- * content, (label, description, children, errors and help) inside of a `WrapIfAdditional` component.
- *
- * @param props - The `FieldTemplateProps` for this component
- */
 export default function FieldTemplate<
   T = any,
   S extends StrictRJSFSchema = RJSFSchema,
   F extends FormContextType = any
->(props: FieldTemplateProps<T, S, F>) {
-  const { id, label, children, errors, help, description, hidden, required, displayLabel, registry, uiSchema } = props;
+>(props: FieldTemplateProps<T, S, F> & NativeTemplateBaseProps) {
+  const { label, children, errors, help, description, hidden, displayLabel, registry, uiSchema, testID } = props;
+
   const uiOptions = getUiOptions(uiSchema);
   const WrapIfAdditionalTemplate = getTemplate<'WrapIfAdditionalTemplate', T, S, F>(
     'WrapIfAdditionalTemplate',
     registry,
     uiOptions
   );
+
   if (hidden) {
-    return <div className='hidden'>{children}</div>;
+    return nativeBridge.createView({
+      testID: `${testID}-hidden`,
+      style: styles.hidden,
+      children,
+    });
   }
+
   return (
     <WrapIfAdditionalTemplate {...props}>
-      {displayLabel && <Label label={label} required={required} id={id} />}
-      {displayLabel && description ? description : null}
-      {children}
-      {errors}
-      {help}
+      {nativeBridge.createView({
+        testID: `${testID}-content`,
+        style: styles.container,
+        children: [
+          displayLabel &&
+            nativeBridge.createView({
+              testID: `${testID}-label-container`,
+              children: [
+                nativeBridge.createText({
+                  testID: `${testID}-label`,
+                  style: styles.label,
+                  children: label,
+                }),
+                displayLabel && description
+                  ? nativeBridge.createText({
+                      testID: `${testID}-description`,
+                      style: styles.description,
+                      children: description,
+                    })
+                  : null,
+              ].filter(Boolean),
+            }),
+          children,
+          errors,
+          help,
+        ].filter(Boolean),
+      })}
     </WrapIfAdditionalTemplate>
   );
 }

@@ -1,6 +1,7 @@
-import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
-import type { ErrorListProps } from '@rjsf/utils';
+import { StyleSheet } from 'react-native';
+import type { ErrorListProps, FormContextType, RJSFSchema, StrictRJSFSchema } from '@rjsf/utils';
+import { nativeBridge } from './NativeTemplateImplementation';
+import type { NativeTemplateBaseProps } from './NativeTemplateBridge';
 
 const styles = StyleSheet.create({
   container: {
@@ -24,21 +25,36 @@ const styles = StyleSheet.create({
   },
 });
 
-export const NativeErrorList: React.FC<ErrorListProps> = ({ errors }) => {
+export function NativeErrorList<T = any, S extends StrictRJSFSchema = RJSFSchema, F extends FormContextType = any>(
+  props: ErrorListProps<T, S, F> & NativeTemplateBaseProps
+) {
+  const { errors, testID } = props;
+
   if (errors.length === 0) {
     return null;
   }
 
-  return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Errors</Text>
-      {errors.map((error, index) => (
-        <Text key={index} style={styles.errorItem}>
-          {error.stack}
-        </Text>
-      ))}
-    </View>
-  );
-};
+  return nativeBridge.createView({
+    testID,
+    style: styles.container,
+    accessible: true,
+    accessibilityRole: 'alert',
+    children: [
+      nativeBridge.createText({
+        testID: `${testID}-title`,
+        style: styles.title,
+        children: 'Errors',
+      }),
+      ...errors.map((error, index) =>
+        nativeBridge.createText({
+          key: `error-${index}`,
+          testID: `${testID}-error-${index}`,
+          style: styles.errorItem,
+          children: error.stack,
+        })
+      ),
+    ],
+  });
+}
 
 export default NativeErrorList;

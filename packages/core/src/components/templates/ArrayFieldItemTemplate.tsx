@@ -1,5 +1,7 @@
-import { View, StyleSheet } from 'react-native';
+import { StyleSheet } from 'react-native';
 import type { ArrayFieldTemplateItemType, FormContextType, RJSFSchema, StrictRJSFSchema } from '@rjsf/utils';
+import { nativeBridge } from './NativeTemplateImplementation';
+import type { NativeTemplateBaseProps } from './NativeTemplateBridge';
 
 const styles = StyleSheet.create({
   container: {
@@ -21,7 +23,7 @@ export default function NativeArrayFieldItemTemplate<
   T = any,
   S extends StrictRJSFSchema = RJSFSchema,
   F extends FormContextType = any
->(props: ArrayFieldTemplateItemType<T, S, F>) {
+>(props: ArrayFieldTemplateItemType<T, S, F> & NativeTemplateBaseProps) {
   const {
     children,
     disabled,
@@ -34,45 +36,52 @@ export default function NativeArrayFieldItemTemplate<
     onReorderClick,
     readonly,
     registry,
+    testID,
   } = props;
 
   const {
     ButtonTemplates: { RemoveButton, MoveUpButton, MoveDownButton },
   } = registry.templates;
 
-  return (
-    <View
-      style={styles.container}
-      accessible={true}
-      accessibilityRole="none"
-      accessibilityLabel={`Array item ${index + 1}`}
-    >
-      {children}
-      {hasToolbar && (
-        <View style={styles.toolbar}>
-          {hasMoveUp && (
-            <MoveUpButton
-              disabled={disabled || readonly}
-              onClick={onReorderClick(index, index - 1)}
-              registry={registry}
-            />
-          )}
-          {hasMoveDown && (
-            <MoveDownButton
-              disabled={disabled || readonly}
-              onClick={onReorderClick(index, index + 1)}
-              registry={registry}
-            />
-          )}
-          {hasRemove && (
-            <RemoveButton
-              disabled={disabled || readonly}
-              onClick={onDropIndexClick(index)}
-              registry={registry}
-            />
-          )}
-        </View>
-      )}
-    </View>
-  );
+  return nativeBridge.createView({
+    testID,
+    style: styles.container,
+    accessible: true,
+    accessibilityRole: 'none',
+    accessibilityLabel: `Array item ${index + 1}`,
+    children: [
+      children,
+      hasToolbar &&
+        nativeBridge.createView({
+          testID: `${testID}-toolbar`,
+          style: styles.toolbar,
+          children: [
+            hasMoveUp && (
+              <MoveUpButton
+                key='move-up'
+                disabled={disabled || readonly}
+                onClick={onReorderClick(index, index - 1)}
+                registry={registry}
+              />
+            ),
+            hasMoveDown && (
+              <MoveDownButton
+                key='move-down'
+                disabled={disabled || readonly}
+                onClick={onReorderClick(index, index + 1)}
+                registry={registry}
+              />
+            ),
+            hasRemove && (
+              <RemoveButton
+                key='remove'
+                disabled={disabled || readonly}
+                onClick={onDropIndexClick(index)}
+                registry={registry}
+              />
+            ),
+          ].filter(Boolean),
+        }),
+    ].filter(Boolean),
+  });
 }
