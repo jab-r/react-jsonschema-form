@@ -1,3 +1,4 @@
+import { View, StyleSheet, type AccessibilityRole } from 'react-native';
 import {
   getTemplate,
   getUiOptions,
@@ -8,29 +9,25 @@ import {
   StrictRJSFSchema,
 } from '@rjsf/utils';
 
-/** The `ArrayFieldTemplate` component is the template used to render all items in an array.
- *
- * @param props - The `ArrayFieldTemplateItemType` props for the component
- */
-export default function ArrayFieldTemplate<
+const styles = StyleSheet.create({
+  container: {
+    marginBottom: 16,
+  },
+  itemList: {
+    marginBottom: 8,
+  },
+  addButton: {
+    marginTop: 8,
+  },
+});
+
+export default function NativeArrayFieldTemplate<
   T = any,
   S extends StrictRJSFSchema = RJSFSchema,
   F extends FormContextType = any
 >(props: ArrayFieldTemplateProps<T, S, F>) {
-  const {
-    canAdd,
-    className,
-    disabled,
-    idSchema,
-    uiSchema,
-    items,
-    onAddClick,
-    readonly,
-    registry,
-    required,
-    schema,
-    title,
-  } = props;
+  const { canAdd, disabled, idSchema, uiSchema, items, onAddClick, readonly, registry, required, schema, title } = props;
+
   const uiOptions = getUiOptions<T, S, F>(uiSchema);
   const ArrayFieldDescriptionTemplate = getTemplate<'ArrayFieldDescriptionTemplate', T, S, F>(
     'ArrayFieldDescriptionTemplate',
@@ -47,12 +44,18 @@ export default function ArrayFieldTemplate<
     registry,
     uiOptions
   );
-  // Button templates are not overridden in the uiSchema
+
   const {
     ButtonTemplates: { AddButton },
   } = registry.templates;
+
   return (
-    <fieldset className={className} id={idSchema.$id}>
+    <View
+      style={styles.container}
+      accessible={true}
+      accessibilityRole={'adjustable' as AccessibilityRole}
+      accessibilityLabel={title || schema.title || schema.description || 'Array field group'}
+    >
       <ArrayFieldTitleTemplate
         idSchema={idSchema}
         title={uiOptions.title || title}
@@ -68,21 +71,17 @@ export default function ArrayFieldTemplate<
         uiSchema={uiSchema}
         registry={registry}
       />
-      <div className='row array-item-list'>
+      <View style={styles.itemList}>
         {items &&
           items.map(({ key, ...itemProps }: ArrayFieldTemplateItemType<T, S, F>) => (
             <ArrayFieldItemTemplate key={key} {...itemProps} />
           ))}
-      </div>
+      </View>
       {canAdd && (
-        <AddButton
-          className='array-item-add'
-          onClick={onAddClick}
-          disabled={disabled || readonly}
-          uiSchema={uiSchema}
-          registry={registry}
-        />
+        <View style={styles.addButton}>
+          <AddButton onClick={onAddClick} disabled={disabled || readonly} uiSchema={uiSchema} registry={registry} />
+        </View>
       )}
-    </fieldset>
+    </View>
   );
 }

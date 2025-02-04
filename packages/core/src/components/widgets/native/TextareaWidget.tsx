@@ -11,6 +11,10 @@ const styles = StyleSheet.create({
     minHeight: 100,
     textAlignVertical: 'top',
   },
+  disabledTextarea: {
+    backgroundColor: '#f5f5f5',
+    borderColor: '#ddd',
+  },
 });
 
 const TextareaWidget: React.FC<NativeWidgetProps> = ({
@@ -24,6 +28,8 @@ const TextareaWidget: React.FC<NativeWidgetProps> = ({
   style,
   textStyle,
   placeholder,
+  label,
+  schema,
 }) => {
   const handleChangeText = React.useCallback(
     (text: string) => {
@@ -44,10 +50,13 @@ const TextareaWidget: React.FC<NativeWidgetProps> = ({
     }
   }, [onFocus, id, value]);
 
+  const accessibilityLabel = label || schema?.title || 'Multi-line text input field';
+  const accessibilityHint = schema?.description || 'Enter multiple lines of text. Use return key for new lines';
+
   return (
     <TextInput
-      testID={id}
-      style={[styles.textarea, style, textStyle]}
+      nativeID={id}
+      style={[styles.textarea, (disabled || readonly) && styles.disabledTextarea, style, textStyle]}
       value={value ? String(value) : ''}
       onChangeText={handleChangeText}
       onBlur={handleBlur}
@@ -56,6 +65,20 @@ const TextareaWidget: React.FC<NativeWidgetProps> = ({
       placeholder={placeholder}
       multiline
       numberOfLines={4}
+      keyboardType='default'
+      autoCapitalize='sentences'
+      autoCorrect={true}
+      textContentType='none'
+      returnKeyType='default'
+      blurOnSubmit={false}
+      accessible={true}
+      accessibilityLabel={accessibilityLabel}
+      accessibilityHint={accessibilityHint}
+      accessibilityRole='text'
+      accessibilityState={{
+        disabled: disabled || readonly,
+      }}
+      importantForAccessibility='yes'
     />
   );
 };

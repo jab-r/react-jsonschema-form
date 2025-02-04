@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, StyleSheet, Platform } from 'react-native';
+import { View, StyleSheet, Platform, Text } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import type { SelectWidgetProps, SelectOption } from './types';
 
@@ -21,6 +21,15 @@ const styles = StyleSheet.create({
   error: {
     borderColor: '#dc3545',
   },
+  disabled: {
+    backgroundColor: '#f5f5f5',
+    borderColor: '#ddd',
+  },
+  errorText: {
+    color: '#dc3545',
+    fontSize: 12,
+    marginTop: 4,
+  },
 });
 
 const SelectWidget: React.FC<SelectWidgetProps> = ({
@@ -36,7 +45,7 @@ const SelectWidget: React.FC<SelectWidgetProps> = ({
   style,
   rawErrors = [],
   label,
-  testID,
+  schema,
 }) => {
   const { enumOptions = [], enumDisabled = [] } = options;
   const hasError = rawErrors && rawErrors.length > 0;
@@ -57,31 +66,53 @@ const SelectWidget: React.FC<SelectWidgetProps> = ({
     }
   }, [onFocus, id, value]);
 
+  const accessibilityLabel = label || schema?.title || `Select ${id}`;
+  const accessibilityHint =
+    schema?.description ||
+    `Select an option${required ? ' (required)' : ''}${hasError ? '. Has validation errors' : ''}`;
+
   return (
-    <View style={[styles.container, hasError && styles.error, style]}>
-      <Picker
-        enabled={!disabled && !readonly}
-        selectedValue={value}
-        onValueChange={handleValueChange}
-        onFocus={handleFocus}
-        testID={testID}
-        accessibilityLabel={label || `Select ${id}`}
-        accessibilityHint={`Select an option${required ? ' (required)' : ''}`}
-        accessibilityRole='combobox'
-        accessibilityState={{
-          disabled: disabled || readonly,
-        }}
-      >
-        {!required && <Picker.Item label='' value='' />}
-        {enumOptions.map((option: SelectOption, index: number) => (
-          <Picker.Item
+    <View>
+      <View style={[styles.container, hasError && styles.error, (disabled || readonly) && styles.disabled, style]}>
+        <Picker
+          nativeID={id}
+          enabled={!disabled && !readonly}
+          selectedValue={value}
+          onValueChange={handleValueChange}
+          onFocus={handleFocus}
+          accessible={true}
+          accessibilityLabel={accessibilityLabel}
+          accessibilityHint={accessibilityHint}
+          accessibilityRole='combobox'
+          accessibilityState={{
+            disabled: disabled || readonly,
+            selected: value !== undefined && value !== '',
+          }}
+          importantForAccessibility='yes'
+        >
+          {!required && <Picker.Item label='' value='' enabled={!disabled && !readonly} />}
+          {enumOptions.map((option: SelectOption, index: number) => (
+            <Picker.Item
+              key={index}
+              label={String(option.label)}
+              value={option.value}
+              enabled={!enumDisabled.includes(option.value) && !disabled && !readonly}
+            />
+          ))}
+        </Picker>
+      </View>
+      {hasError &&
+        rawErrors.map((error: string, index: number) => (
+          <Text
             key={index}
-            label={String(option.label)}
-            value={option.value}
-            enabled={!enumDisabled.includes(option.value)}
-          />
+            style={styles.errorText}
+            accessible={true}
+            accessibilityRole='alert'
+            accessibilityLabel={`Error: ${error}`}
+          >
+            {error}
+          </Text>
         ))}
-      </Picker>
     </View>
   );
 };

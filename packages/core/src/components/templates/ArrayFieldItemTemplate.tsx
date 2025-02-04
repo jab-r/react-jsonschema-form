@@ -1,90 +1,78 @@
-import { CSSProperties } from 'react';
-import { ArrayFieldTemplateItemType, FormContextType, RJSFSchema, StrictRJSFSchema } from '@rjsf/utils';
+import { View, StyleSheet } from 'react-native';
+import type { ArrayFieldTemplateItemType, FormContextType, RJSFSchema, StrictRJSFSchema } from '@rjsf/utils';
 
-/** The `ArrayFieldItemTemplate` component is the template used to render an items of an array.
- *
- * @param props - The `ArrayFieldTemplateItemType` props for the component
- */
-export default function ArrayFieldItemTemplate<
+const styles = StyleSheet.create({
+  container: {
+    marginBottom: 8,
+    borderWidth: 1,
+    borderColor: '#e2e2e2',
+    borderRadius: 4,
+    padding: 12,
+  },
+  toolbar: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    marginTop: 8,
+    gap: 8,
+  },
+});
+
+export default function NativeArrayFieldItemTemplate<
   T = any,
   S extends StrictRJSFSchema = RJSFSchema,
   F extends FormContextType = any
 >(props: ArrayFieldTemplateItemType<T, S, F>) {
   const {
     children,
-    className,
     disabled,
     hasToolbar,
     hasMoveDown,
     hasMoveUp,
     hasRemove,
-    hasCopy,
     index,
-    onCopyIndexClick,
     onDropIndexClick,
     onReorderClick,
     readonly,
     registry,
-    uiSchema,
   } = props;
-  const { CopyButton, MoveDownButton, MoveUpButton, RemoveButton } = registry.templates.ButtonTemplates;
-  const btnStyle: CSSProperties = {
-    flex: 1,
-    paddingLeft: 6,
-    paddingRight: 6,
-    fontWeight: 'bold',
-  };
+
+  const {
+    ButtonTemplates: { RemoveButton, MoveUpButton, MoveDownButton },
+  } = registry.templates;
+
   return (
-    <div className={className}>
-      <div className={hasToolbar ? 'col-xs-9' : 'col-xs-12'}>{children}</div>
+    <View
+      style={styles.container}
+      accessible={true}
+      accessibilityRole="none"
+      accessibilityLabel={`Array item ${index + 1}`}
+    >
+      {children}
       {hasToolbar && (
-        <div className='col-xs-3 array-item-toolbox'>
-          <div
-            className='btn-group'
-            style={{
-              display: 'flex',
-              justifyContent: 'space-around',
-            }}
-          >
-            {(hasMoveUp || hasMoveDown) && (
-              <MoveUpButton
-                style={btnStyle}
-                disabled={disabled || readonly || !hasMoveUp}
-                onClick={onReorderClick(index, index - 1)}
-                uiSchema={uiSchema}
-                registry={registry}
-              />
-            )}
-            {(hasMoveUp || hasMoveDown) && (
-              <MoveDownButton
-                style={btnStyle}
-                disabled={disabled || readonly || !hasMoveDown}
-                onClick={onReorderClick(index, index + 1)}
-                uiSchema={uiSchema}
-                registry={registry}
-              />
-            )}
-            {hasCopy && (
-              <CopyButton
-                style={btnStyle}
-                disabled={disabled || readonly}
-                onClick={onCopyIndexClick(index)}
-                uiSchema={uiSchema}
-                registry={registry}
-              />
-            )}
-            {hasRemove && (
-              <RemoveButton
-                style={btnStyle}
-                disabled={disabled || readonly}
-                onClick={onDropIndexClick(index)}
-                uiSchema={uiSchema}
-                registry={registry}
-              />
-            )}
-          </div>
-        </div>
+        <View style={styles.toolbar}>
+          {hasMoveUp && (
+            <MoveUpButton
+              disabled={disabled || readonly}
+              onClick={onReorderClick(index, index - 1)}
+              registry={registry}
+            />
+          )}
+          {hasMoveDown && (
+            <MoveDownButton
+              disabled={disabled || readonly}
+              onClick={onReorderClick(index, index + 1)}
+              registry={registry}
+            />
+          )}
+          {hasRemove && (
+            <RemoveButton
+              disabled={disabled || readonly}
+              onClick={onDropIndexClick(index)}
+              registry={registry}
+            />
+          )}
+        </View>
       )}
-    </div>
+    </View>
   );
 }

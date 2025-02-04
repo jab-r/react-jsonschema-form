@@ -1,43 +1,45 @@
-import {
-  getTemplate,
-  getUiOptions,
-  titleId,
-  ArrayFieldTitleProps,
-  FormContextType,
-  RJSFSchema,
-  StrictRJSFSchema,
-  TemplatesType,
-} from '@rjsf/utils';
+import { View, Text, StyleSheet } from 'react-native';
+import type { ArrayFieldTitleProps, FormContextType, RJSFSchema, StrictRJSFSchema } from '@rjsf/utils';
 
-/** The `ArrayFieldTitleTemplate` component renders a `TitleFieldTemplate` with an `id` derived from
- * the `idSchema`.
- *
- * @param props - The `ArrayFieldTitleProps` for the component
- */
-export default function ArrayFieldTitleTemplate<
+const styles = StyleSheet.create({
+  container: {
+    marginBottom: 8,
+  },
+  title: {
+    fontSize: 16,
+    fontWeight: '500',
+  },
+  titleContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  required: {
+    color: '#dc3545',
+    marginLeft: 4,
+  },
+});
+
+export default function NativeArrayFieldTitleTemplate<
   T = any,
   S extends StrictRJSFSchema = RJSFSchema,
   F extends FormContextType = any
 >(props: ArrayFieldTitleProps<T, S, F>) {
-  const { idSchema, title, schema, uiSchema, required, registry } = props;
-  const options = getUiOptions<T, S, F>(uiSchema, registry.globalUiOptions);
-  const { label: displayLabel = true } = options;
-  if (!title || !displayLabel) {
+  const { title, required } = props;
+
+  if (!title) {
     return null;
   }
-  const TitleFieldTemplate: TemplatesType<T, S, F>['TitleFieldTemplate'] = getTemplate<'TitleFieldTemplate', T, S, F>(
-    'TitleFieldTemplate',
-    registry,
-    options
-  );
+
   return (
-    <TitleFieldTemplate
-      id={titleId<T>(idSchema)}
-      title={title}
-      required={required}
-      schema={schema}
-      uiSchema={uiSchema}
-      registry={registry}
-    />
+    <View 
+      style={styles.container}
+      accessible={true}
+      accessibilityRole="header"
+    >
+      <View style={styles.titleContainer}>
+        <Text style={styles.title}>{title}</Text>
+        {required && <Text style={styles.required}>*</Text>}
+      </View>
+    </View>
   );
 }

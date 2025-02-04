@@ -27,6 +27,8 @@ const URLWidget: React.FC<NativeWidgetProps> = ({
   placeholder = 'https://example.com',
   style,
   textStyle,
+  label,
+  schema,
 }) => {
   const handleChangeText = React.useCallback(
     (text: string) => {
@@ -47,6 +49,9 @@ const URLWidget: React.FC<NativeWidgetProps> = ({
     }
   }, [onFocus, id, value]);
 
+  const accessibilityLabel = label || schema?.title || 'URL input field';
+  const accessibilityHint = schema?.description || 'Enter a valid URL starting with http:// or https://';
+
   return (
     <TextInput
       nativeID={id}
@@ -63,6 +68,14 @@ const URLWidget: React.FC<NativeWidgetProps> = ({
       spellCheck={false}
       textContentType='URL'
       autoComplete='url'
+      accessible={true}
+      accessibilityLabel={accessibilityLabel}
+      accessibilityHint={accessibilityHint}
+      accessibilityRole='text'
+      accessibilityState={{
+        disabled: disabled || readonly,
+      }}
+      importantForAccessibility='yes'
     />
   );
 };

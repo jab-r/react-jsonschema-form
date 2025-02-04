@@ -8,6 +8,11 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#ccc',
     borderRadius: 4,
+    minHeight: 40,
+  },
+  disabledInput: {
+    backgroundColor: '#f5f5f5',
+    borderColor: '#ddd',
   },
 });
 
@@ -22,6 +27,8 @@ const TextWidget: React.FC<NativeWidgetProps> = ({
   style,
   textStyle,
   placeholder,
+  label,
+  schema,
 }) => {
   const handleChangeText = React.useCallback(
     (text: string) => {
@@ -42,16 +49,31 @@ const TextWidget: React.FC<NativeWidgetProps> = ({
     }
   }, [onFocus, id, value]);
 
+  const accessibilityLabel = label || schema?.title || 'Text input field';
+  const accessibilityHint = schema?.description || 'Enter text';
+
   return (
     <TextInput
-      testID={id}
-      style={[styles.input, style, textStyle]}
+      nativeID={id}
+      style={[styles.input, (disabled || readonly) && styles.disabledInput, style, textStyle]}
       value={value ? String(value) : ''}
       onChangeText={handleChangeText}
       onBlur={handleBlur}
       onFocus={handleFocus}
       editable={!disabled && !readonly}
       placeholder={placeholder}
+      keyboardType='default'
+      autoCapitalize='sentences'
+      autoCorrect={true}
+      textContentType='none'
+      accessible={true}
+      accessibilityLabel={accessibilityLabel}
+      accessibilityHint={accessibilityHint}
+      accessibilityRole='text'
+      accessibilityState={{
+        disabled: disabled || readonly,
+      }}
+      importantForAccessibility='yes'
     />
   );
 };

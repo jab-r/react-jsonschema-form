@@ -1,7 +1,7 @@
 # Product Context
 
 ## Purpose
-react-jsonschema-form is a React Native component library that uses JSON Schema to declaratively build and customize forms. It provides a powerful way to generate forms from JSON Schema specifications, making it easier for developers to create complex form interfaces for mobile platforms.
+react-jsonschema-form is a React Native component library that uses JSON Schema to declaratively build and customize forms in the mobile react-native environment. It provides a powerful way to generate forms from JSON Schema specifications, making it easier for developers to create complex form interfaces for mobile platforms.
 
 ## Problems Solved
 1. Reduces boilerplate code needed to create forms
