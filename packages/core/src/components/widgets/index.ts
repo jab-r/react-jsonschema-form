@@ -1,24 +1,16 @@
-import { FormContextType, RegistryWidgetsType, RJSFSchema, StrictRJSFSchema } from '@rjsf/utils';
-
-import AltDateWidget from './AltDateWidget';
-import AltDateTimeWidget from './AltDateTimeWidget';
-import CheckboxWidget from './CheckboxWidget';
-import CheckboxesWidget from './CheckboxesWidget';
-import ColorWidget from './ColorWidget';
-import DateWidget from './DateWidget';
-import DateTimeWidget from './DateTimeWidget';
-import EmailWidget from './EmailWidget';
-import FileWidget from './FileWidget';
-import HiddenWidget from './HiddenWidget';
-import PasswordWidget from './PasswordWidget';
-import RadioWidget from './RadioWidget';
-import RangeWidget from './RangeWidget';
-import SelectWidget from './SelectWidget';
-import TextareaWidget from './TextareaWidget';
-import TextWidget from './TextWidget';
-import TimeWidget from './TimeWidget';
-import URLWidget from './URLWidget';
-import UpDownWidget from './UpDownWidget';
+import { FormContextType, RegistryWidgetsType, RJSFSchema, StrictRJSFSchema, Widget } from '@rjsf/utils';
+import {
+  TextWidget,
+  SelectWidget,
+  CheckboxWidget,
+  TextareaWidget,
+  RadioWidget,
+  DateTimeWidget,
+  RangeWidget,
+  EmailWidget,
+  URLWidget,
+  PasswordWidget,
+} from './native';
 
 function widgets<
   T = any,
@@ -26,25 +18,16 @@ function widgets<
   F extends FormContextType = any
 >(): RegistryWidgetsType<T, S, F> {
   return {
-    AltDateWidget,
-    AltDateTimeWidget,
-    CheckboxWidget,
-    CheckboxesWidget,
-    ColorWidget,
-    DateWidget,
-    DateTimeWidget,
-    EmailWidget,
-    FileWidget,
-    HiddenWidget,
-    PasswordWidget,
-    RadioWidget,
-    RangeWidget,
-    SelectWidget,
-    TextWidget,
-    TextareaWidget,
-    TimeWidget,
-    UpDownWidget,
-    URLWidget,
+    TextWidget: TextWidget as unknown as Widget<T, S, F>,
+    SelectWidget: SelectWidget as unknown as Widget<T, S, F>,
+    CheckboxWidget: CheckboxWidget as unknown as Widget<T, S, F>,
+    TextareaWidget: TextareaWidget as unknown as Widget<T, S, F>,
+    RadioWidget: RadioWidget as unknown as Widget<T, S, F>,
+    DateTimeWidget: DateTimeWidget as unknown as Widget<T, S, F>,
+    RangeWidget: RangeWidget as unknown as Widget<T, S, F>,
+    EmailWidget: EmailWidget as unknown as Widget<T, S, F>,
+    URLWidget: URLWidget as unknown as Widget<T, S, F>,
+    PasswordWidget: PasswordWidget as unknown as Widget<T, S, F>,
   };
 }
 

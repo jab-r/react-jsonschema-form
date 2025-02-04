@@ -21,6 +21,7 @@ import {
   SchemaUtilsType,
   shouldRender,
   SUBMIT_BTN_OPTIONS_KEY,
+  TemplatesType,
   toErrorList,
   UiSchema,
   UI_GLOBAL_OPTIONS_KEY,
@@ -394,60 +395,137 @@ export default class FormNative<
   validateFormWithFormData = (formData?: T): boolean => {
     const { extraErrors, extraErrorsBlockSubmit, focusOnFirstError, onError } = this.props;
     const { errors: prevErrors } = this.state;
-    const schemaValidation = this.validate(formData);
-    let errors = schemaValidation.errors;
-    let errorSchema = schemaValidation.errorSchema;
-    const schemaValidationErrors = errors;
-    const schemaValidationErrorSchema = errorSchema;
-    const hasError = errors.length > 0 || (extraErrors && extraErrorsBlockSubmit);
-    if (hasError) {
-      if (extraErrors) {
-        const merged = validationDataMerge(schemaValidation, extraErrors);
-        errorSchema = merged.errorSchema;
-        errors = merged.errors;
-      }
-      if (focusOnFirstError) {
-        if (typeof focusOnFirstError === 'function') {
-          focusOnFirstError(errors[0]);
-        } else {
-          // In React Native, we'll scroll to the first error
-          if (this.formElement.current) {
-            this.formElement.current.scrollTo({ y: 0, animated: true });
-          }
+
+    try {
+      // Start validation
+      this.setState({ isValidating: true, lastValidation: Date.now() });
+
+      const schemaValidation = this.validate(formData);
+      let errors = schemaValidation.errors;
+      let errorSchema = schemaValidation.errorSchema;
+      const schemaValidationErrors = errors;
+      const schemaValidationErrorSchema = errorSchema;
+
+      // Check for validation errors and extra errors
+      const hasValidationErrors = errors.length > 0;
+      const hasBlockingExtraErrors = extraErrors && extraErrorsBlockSubmit;
+      const hasError = hasValidationErrors || hasBlockingExtraErrors;
+
+      if (hasError) {
+        // Merge extra errors if they exist
+        if (extraErrors) {
+          const merged = validationDataMerge(schemaValidation, extraErrors);
+          errorSchema = merged.errorSchema;
+          errors = merged.errors;
         }
-      }
-      this.setState(
-        {
-          errors,
-          errorSchema,
-          schemaValidationErrors,
-          schemaValidationErrorSchema,
-        },
-        () => {
-          if (onError) {
-            onError(errors);
+
+        // Handle error focus/scroll behavior
+        if (focusOnFirstError && errors.length > 0) {
+          if (typeof focusOnFirstError === 'function') {
+            focusOnFirstError(errors[0]);
           } else {
-            console.error('Form validation failed', errors);
+            // Safely scroll to first error in React Native
+            if (this.formElement.current) {
+              try {
+                this.formElement.current.scrollTo({ y: 0, animated: true });
+              } catch (scrollError) {
+                console.warn('Error scrolling to form error:', scrollError);
+              }
+            }
           }
         }
-      );
-    } else if (prevErrors.length > 0) {
+
+        // Update state with validation results
+        this.setState(
+          {
+            errors,
+            errorSchema,
+            schemaValidationErrors,
+            schemaValidationErrorSchema,
+            isValidating: false,
+            isDirty: true,
+            status: 'error',
+          },
+          () => {
+            if (onError) {
+              onError(errors);
+            } else {
+              console.error('Form validation failed:', errors);
+            }
+          }
+        );
+      } else {
+        // Clear any previous errors
+        if (prevErrors.length > 0) {
+          this.setState({
+            errors: [],
+            errorSchema: {},
+            schemaValidationErrors: [],
+            schemaValidationErrorSchema: {},
+            isValidating: false,
+            isDirty: false,
+            status: 'editing',
+          });
+        } else {
+          this.setState({
+            isValidating: false,
+            isDirty: false,
+            status: 'editing',
+          });
+        }
+      }
+
+      return !hasError;
+    } catch (error) {
+      // Handle unexpected validation errors
+      console.error('Unexpected validation error:', error);
       this.setState({
-        errors: [],
-        errorSchema: {},
-        schemaValidationErrors: [],
-        schemaValidationErrorSchema: {},
+        isValidating: false,
+        isDirty: true,
+        status: 'error',
+        errors: [{ stack: String(error) } as RJSFValidationError],
+        errorSchema: { __errors: [String(error)] } as ErrorSchema<T>,
       });
+      if (onError) {
+        onError([{ stack: String(error) } as RJSFValidationError]);
+      }
+      return false;
     }
-    return !hasError;
   };
 
   getRegistry(): Registry<T, S, F> {
-    const { translateString: customTranslateString, uiSchema = {} } = this.props;
+    const { translateString: customTranslateString, uiSchema = {}, templates = {} } = this.props;
     const { schemaUtils } = this.state;
+
+    // Ensure all required template properties are defined with non-null defaults
+    const defaultTemplates: TemplatesType<T, S, F> = {
+      ArrayFieldTemplate: templates.ArrayFieldTemplate || ((() => null) as any),
+      ArrayFieldDescriptionTemplate: templates.ArrayFieldDescriptionTemplate || ((() => null) as any),
+      ArrayFieldItemTemplate: templates.ArrayFieldItemTemplate || ((() => null) as any),
+      ArrayFieldTitleTemplate: templates.ArrayFieldTitleTemplate || ((() => null) as any),
+      BaseInputTemplate: templates.BaseInputTemplate || ((() => null) as any),
+      ButtonTemplates: {
+        SubmitButton: templates.ButtonTemplates?.SubmitButton || ((() => null) as any),
+        AddButton: templates.ButtonTemplates?.AddButton || ((() => null) as any),
+        CopyButton: templates.ButtonTemplates?.CopyButton || ((() => null) as any),
+        MoveDownButton: templates.ButtonTemplates?.MoveDownButton || ((() => null) as any),
+        MoveUpButton: templates.ButtonTemplates?.MoveUpButton || ((() => null) as any),
+        RemoveButton: templates.ButtonTemplates?.RemoveButton || ((() => null) as any),
+      },
+      DescriptionFieldTemplate: templates.DescriptionFieldTemplate || ((() => null) as any),
+      ErrorListTemplate: templates.ErrorListTemplate || ((() => null) as any),
+      FieldErrorTemplate: templates.FieldErrorTemplate || ((() => null) as any),
+      FieldHelpTemplate: templates.FieldHelpTemplate || ((() => null) as any),
+      FieldTemplate: templates.FieldTemplate || ((() => null) as any),
+      ObjectFieldTemplate: templates.ObjectFieldTemplate || ((() => null) as any),
+      TitleFieldTemplate: templates.TitleFieldTemplate || ((() => null) as any),
+      UnsupportedFieldTemplate: templates.UnsupportedFieldTemplate || ((() => null) as any),
+      WrapIfAdditionalTemplate: templates.WrapIfAdditionalTemplate || ((() => null) as any),
+    };
+
     return {
       fields: { ...this.props.fields },
-      templates: { ...this.props.templates },
+      templates: defaultTemplates,
       widgets: { ...this.props.widgets },
       rootSchema: this.props.schema,
       formContext: this.props.formContext || ({} as F),

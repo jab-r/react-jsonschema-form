@@ -44,7 +44,8 @@ export interface UseFormProps<T = any, S extends StrictRJSFSchema = RJSFSchema, 
   experimental_customMergeAllOf?: Experimental_CustomMergeAllOf<S>;
 }
 
-export interface UseFormReturn<T = any, S extends StrictRJSFSchema = RJSFSchema, F extends FormContextType = any> extends FormState<T, S, F> {
+export interface UseFormReturn<T = any, S extends StrictRJSFSchema = RJSFSchema, F extends FormContextType = any>
+  extends FormState<T, S, F> {
   handleChange: (data: T, newErrorSchema?: ErrorSchema<T>) => void;
   handleSubmit: (event: NativeSyntheticEvent<NativeTouchEvent>) => void;
   handleBlur: (id: string, value: any) => void;
@@ -104,11 +105,44 @@ export interface FormState<T = any, S extends StrictRJSFSchema = RJSFSchema, F e
   retrievedSchema: S;
   edit: boolean;
   schemaUtils: SchemaUtilsType<T, S, F>;
+  /** Indicates if the form is currently validating */
+  isValidating?: boolean;
+  /** Indicates if the form has been touched/modified */
+  isDirty?: boolean;
+  /** Timestamp of the last validation */
+  lastValidation?: number;
+  /** Current form status */
+  status?: FormStatus;
 }
+
+/** Type guard to check if a value matches the FormState interface */
+export function isFormState<T = any, S extends StrictRJSFSchema = RJSFSchema, F extends FormContextType = any>(
+  value: any
+): value is FormState<T, S, F> {
+  return (
+    typeof value === 'object' &&
+    value !== null &&
+    'schema' in value &&
+    'uiSchema' in value &&
+    'idSchema' in value &&
+    Array.isArray(value.errors) &&
+    typeof value.edit === 'boolean'
+  );
+}
+
+export type FormStatus = 'initial' | 'editing' | 'submitting' | 'submitted' | 'error';
 
 export interface IChangeEvent<T = any, S extends StrictRJSFSchema = RJSFSchema, F extends FormContextType = any>
   extends Omit<FormState<T, S, F>, 'schemaValidationErrors' | 'schemaValidationErrorSchema'> {
-  status?: 'submitted';
+  status?: FormStatus;
+  timestamp: number;
+}
+
+/** Type guard to check if a value matches the IChangeEvent interface */
+export function isChangeEvent<T = any, S extends StrictRJSFSchema = RJSFSchema, F extends FormContextType = any>(
+  value: any
+): value is IChangeEvent<T, S, F> {
+  return isFormState(value) && 'timestamp' in value;
 }
 
 export interface RegistryProps<T = any, S extends StrictRJSFSchema = RJSFSchema, F extends FormContextType = any> {
@@ -117,4 +151,23 @@ export interface RegistryProps<T = any, S extends StrictRJSFSchema = RJSFSchema,
   widgets: RegistryWidgetsType<T, S, F>;
   formContext: F;
   translateString: Registry<T, S, F>['translateString'];
+  /** Optional validation mode - 'onSubmit' | 'onBlur' | 'onChange' */
+  validationMode?: 'onSubmit' | 'onBlur' | 'onChange';
+  /** Optional error handling strategy */
+  errorHandlingStrategy?: 'fallback' | 'throw' | 'silent';
+}
+
+/** Type guard to check if a value matches the RegistryProps interface */
+export function isRegistryProps<T = any, S extends StrictRJSFSchema = RJSFSchema, F extends FormContextType = any>(
+  value: any
+): value is RegistryProps<T, S, F> {
+  return (
+    typeof value === 'object' &&
+    value !== null &&
+    'fields' in value &&
+    'templates' in value &&
+    'widgets' in value &&
+    'formContext' in value &&
+    typeof value.translateString === 'function'
+  );
 }
